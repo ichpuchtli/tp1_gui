@@ -15,7 +15,7 @@ def dec2bin(num):
 
     return '0' + ''.join([str(x) for x in mid[::-1]])
 
-# Button definitions align to IR Remote buttons to convserve firware computation
+# Button definitions align to IR Remote buttons to conserve firmware computation
 IR_DEF_0 = dec2bin(0x57)
 IR_DEF_1 = dec2bin(0x49)
 IR_DEF_2 = dec2bin(0x51)
@@ -39,26 +39,23 @@ IR_NUM_ARRAY = [IR_DEF_0, IR_DEF_1, IR_DEF_2, IR_DEF_3, IR_DEF_4, IR_DEF_5,
     IR_DEF_6, IR_DEF_7, IR_DEF_8, IR_DEF_9]
 
 
+# Flashing rectangle size
 RECT_WIDTH = 640
 RECT_HEIGHT = 480
 
 DELAY = 0.08
 
-"""
-Define weather
-"""
-sunny = IR_DEF_1
+# Define weather modes
+sunny = IR_DEF_0
+rainy = IR_DEF_1
 cloudy = IR_DEF_2
-rainy = IR_DEF_3
 
+#  Keywords which result and a forecast being selected for transmission
 sunny_options = ['mostly fine', 'mostly sunny', 'sunny']
 cloudy_options = ['cloudy', 'partly cloudy']
 rainy_options = ['shower', 'light drizzle', 'early drizzle', 'storm']
 
-"""
-Define globals
-"""
-
+# Prints a sequence of characters with a comma between every eighth character
 def print_bin_arr(array):
 
     for i in range(len(array)):
@@ -71,17 +68,9 @@ def print_bin_arr(array):
     print
 
 
+# Decodes a number into a series of binary digits
 def binary_num(num):
-    
-    array = []
-
-    # Assume Year Setting
-    if num > 31:
-        array +=  PADDING + IR_NUM_ARRAY[num/1000] + PADDING + IR_NUM_ARRAY[(num/100)%10]
-
-    array += PADDING + IR_NUM_ARRAY[(num/10)%10] + PADDING + IR_NUM_ARRAY[num%10]
-
-    return array
+    return PADDING + IR_NUM_ARRAY[(num/10)%10] + PADDING + IR_NUM_ARRAY[num%10]
 
 
 def valid_mins(mins):
@@ -99,6 +88,7 @@ def valid_month(month):
 def valid_year(year):
     return (year >= 0 and year <= 9999)
 
+# Returns a boolean representing a valid day, month, year combination
 def valid_date(day,month,year):
     
     if not valid_day(day) or not valid_month(month) or not valid_year(year):
@@ -110,11 +100,12 @@ def valid_date(day,month,year):
     return day <= max_day_dict[month]
 
 
+# Main GUI Class
 class Controller:
 
     def __init__(self,master):
 
-        #The fllowing two variables are used for input of alarm setting
+        # text input place holders
         self.timeMinutes = StringVar(value='00')
         self.timeHours = StringVar(value='00')
         self.alarmMinutes = StringVar(value='00')
@@ -123,7 +114,7 @@ class Controller:
         self.dateMonth = StringVar(value='01')
         self.dateYear = StringVar(value='0000')
 
-        #init the GUI
+        # init the GUI
         self.initGUI(master)
 
     def initGUI(self, master):
@@ -193,7 +184,7 @@ class Controller:
         self.window.pack()
         self.rect = self.window.create_rectangle(0, 0, RECT_WIDTH, RECT_HEIGHT, fill = "white")
 
-
+    # Flashes the rectangle according the sequence of binary digits supplied in "string"
     def flicker(self,string):
          
         print_bin_arr(string)
@@ -205,22 +196,23 @@ class Controller:
             time.sleep(DELAY)
             self.window.update()
 
-    """
-    Use IR_DEF_MUTE to indicate alarm setting
-    The alarm button click event.
-    get the current minutes and hours in the entry
-    flash the box
-    
-    Important: there is not check on the input type.
-    You may implement this by checking the input is number or not 
-    """
+    # Use IR_DEF_MUTE to indicate alarm setting
+    # The alarm button click event.
+    # get the current minutes and hours in the entry
+    # flash the box
+    #
+    # Important: there is not check on the input type.
+    # You may implement this by checking the input is number or not 
     def alarmClick(self):
 
         #Get user input
         hours = int(self.alarmHours.get().strip())
         mins = int(self.alarmMinutes.get().strip())
 
+
         if valid_hours(hours) and valid_mins(mins):
+
+            print "Alarm Time: " + str(hours) + ":" + str(mins)
 
             bit_sequence = list(IR_DEF_MUTE)
             bit_sequence += binary_num(hours)
@@ -228,17 +220,20 @@ class Controller:
             bit_sequence += PADDING + IR_DEF_ENTER + '1'
 
             self.flicker(bit_sequence)
+        else:
+            print "Invalid alarm time."
 
-    """
-    Use IR_DEF_MENU to indicate the time setting
-    """
+    # Use IR_DEF_MENU to indicate the time setting
     def timeClick(self):
 
         #Get user input
         hours = int(self.timeHours.get().strip())
         mins = int(self.timeMinutes.get().strip())
 
+
         if valid_hours(hours) and valid_mins(mins):
+
+            print "Time: " + str(hours) + ":" + str(mins)
             
             bit_sequence = list(IR_DEF_MENU)
             bit_sequence += binary_num(hours)
@@ -246,10 +241,10 @@ class Controller:
             bit_sequence += PADDING + IR_DEF_ENTER + '1'
             
             self.flicker(bit_sequence)
+        else:
+            print "Invalid time."
 
-    """
-    Use IR_DEF_BUY to indicate the date setting
-    """
+    # Use IR_DEF_BUY to indicate the date setting
     def dateClick(self):
 
         #Get user input
@@ -257,20 +252,24 @@ class Controller:
         month = int(self.dateMonth.get().strip())
         year = int(self.dateYear.get().strip())
 
+
         if valid_date(day,month,year):
+
+            print "Day Month Year: " , day, month, year
 
             bit_sequence = list(IR_DEF_BUY)
             bit_sequence += binary_num(day)
             bit_sequence += binary_num(month)
-            bit_sequence += binary_num(year)
+            bit_sequence += PADDING + IR_NUM_ARRAY[year/1000] + PADDING + IR_NUM_ARRAY[(year/100)%10]
+            bit_sequence += PADDING + IR_NUM_ARRAY[(year/10)%10] + PADDING + IR_NUM_ARRAY[year%10]
             bit_sequence += PADDING + IR_DEF_ENTER + '1'
 
             self.flicker(bit_sequence)
+        else:
+            print "Invalid date."
 
-    """
-    Gets the weather from the BoM website. Sends byte based on sunny, cloudy
-    or rainy. Use IR_DEF_AB to indicate weather setting
-    """
+    # Gets the weather from the BoM website. Sends byte based on sunny, cloudy
+    # or rainy. Use IR_DEF_AB to indicate weather setting
     def weatherGet(self):
     
         bit_sequence = list(IR_DEF_AB + PADDING)
@@ -283,23 +282,23 @@ class Controller:
       
         for options in sunny_options:
             if weather.find(options) >= 0 :
-                print 'sunny'
+                print 'Sunny'
                 bit_sequence += sunny
                 break
         else:
             for options in rainy_options:
                 if weather.find(options) >= 0 :
-                    print 'rainy'
+                    print 'Rainy'
                     bit_sequence += rainy
                     break
             else:
                 for options in cloudy_options:
                     if weather.find(options) >= 0 :
-                        print 'cloudy'
+                        print 'Cloudy'
                         bit_sequence += cloudy
                         break
                 else:
-                    print 'sunny [default]'
+                    print 'Sunny [default]'
                     bit_sequence += sunny
 
         bit_sequence +=  PADDING + IR_DEF_ENTER + '1'
