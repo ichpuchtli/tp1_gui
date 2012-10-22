@@ -1,5 +1,6 @@
 """ Include Modules """
 from Tkinter import *           # GUI, StringVar, Entry
+import tkMessageBox
 import time                     # Delay
 import string                   # find, strip, et.c
 import urllib2                  # Used by BeautifulSoup
@@ -106,6 +107,7 @@ class Controller:
     def __init__(self,master):
 
         # text input place holders
+        master.title("Optical Programming")
         self.timeMinutes = StringVar(value='00')
         self.timeHours = StringVar(value='00')
         self.alarmMinutes = StringVar(value='00')
@@ -113,6 +115,7 @@ class Controller:
         self.dateDay = StringVar(value='01')
         self.dateMonth = StringVar(value='01')
         self.dateYear = StringVar(value='0000')
+
 
         # init the GUI
         self.initGUI(master)
@@ -125,7 +128,7 @@ class Controller:
         entry_hour = Entry(timeFrame, textvariable = self.timeHours)
         lbl_minutes = Label(timeFrame, text = "Minutes: ")
         entry_minutes = Entry(timeFrame, textvariable = self.timeMinutes)
-        btn_time = Button(timeFrame, text = "Click", command = self.timeClick)
+        btn_time = Button(timeFrame, text = "Program", command = self.timeClick)
         lbl_timeFrame.pack()
         lbl_hour.pack(side = LEFT)
         entry_hour.pack(side = LEFT)
@@ -143,7 +146,7 @@ class Controller:
         entry_month = Entry(dateFrame, textvariable = self.dateMonth)
         lbl_year = Label(dateFrame, text = "Year:")
         entry_year = Entry(dateFrame, textvariable = self.dateYear)
-        btn_date = Button(dateFrame, text = "Click", command = self.dateClick)
+        btn_date = Button(dateFrame, text = "Program", command = self.dateClick)
         lbl_dateFrame.pack()
         lbl_day.pack(side = LEFT)
         entry_day.pack(side = LEFT)
@@ -161,7 +164,7 @@ class Controller:
         entry_alarmHours = Entry(alarmFrame, textvariable = self.alarmHours)
         lbl_alarmMinutes = Label(alarmFrame, text = "Minutes: ")
         entry_alarmMinutes = Entry(alarmFrame, textvariable = self.alarmMinutes)
-        btn_alarm = Button(alarmFrame, text = "Click", 
+        btn_alarm = Button(alarmFrame, text = "Program", 
                 command = self.alarmClick)
         lbl_alarmFrame.pack()
         lbl_alarmHours.pack(side = LEFT)
@@ -174,7 +177,7 @@ class Controller:
         #Weather retrieving frame
         weatherFrame = Frame(master)
         lbl_weatherFrame = Label(weatherFrame, text = 'Weather')
-        btn_weather = Button(weatherFrame, text = 'Get', command = self.weatherGet)
+        btn_weather = Button(weatherFrame, text = 'Program', command = self.weatherGet)
         lbl_weatherFrame.pack()
         btn_weather.pack()
         weatherFrame.pack()
@@ -195,6 +198,7 @@ class Controller:
                 self.window.itemconfig(self.rect, fill = "white")
             time.sleep(DELAY)
             self.window.update()
+        tkMessageBox.showinfo("Programming", "Finished")
 
     # Use IR_DEF_MUTE to indicate alarm setting
     # The alarm button click event.
@@ -221,6 +225,7 @@ class Controller:
 
             self.flicker(bit_sequence)
         else:
+            tkMessageBox.showerror("Error", "Invalid Alarm Time")
             print "Invalid alarm time."
 
     # Use IR_DEF_MENU to indicate the time setting
@@ -242,6 +247,7 @@ class Controller:
             
             self.flicker(bit_sequence)
         else:
+            tkMessageBox.showerror("Error", "Invalid Time")
             print "Invalid time."
 
     # Use IR_DEF_BUY to indicate the date setting
@@ -266,6 +272,7 @@ class Controller:
 
             self.flicker(bit_sequence)
         else:
+            tkMessageBox.showerror("Error", "Invalid Date")
             print "Invalid date."
 
     # Gets the weather from the BoM website. Sends byte based on sunny, cloudy
